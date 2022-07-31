@@ -39,14 +39,14 @@ private:
 public:
 	CalTree();
 
-	void Input(const std::string& input);
+	void FormulaInput(const std::string& formula);
 	void OperatorInput(const char oper);
 	void OperandInput(const std::string& operand);
-	void FormulaInput(const std::string& formula);
 
 private:
-	void Impl_OperatorInput(char oper);
-	void Impl_OperandInput(const std::string& operand);
+	void Impl_OperatorInput(node_addr nowLoc, char oper);
+	void Impl_OperandInput(node_addr nowLoc, const std::string& operand);
+	void Impl_FormulaInput(node_addr nowLoc, const std::string& formula);
 
 	long double Impl_StrToLDouble(const std::string& operand);
 };

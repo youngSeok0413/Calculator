@@ -6,70 +6,44 @@ CalTree::CalTree() {
 	location = root;
 }
 
-void CalTree::Input(const std::string& input) {}
+void CalTree::FormulaInput(const std::string& formula) {
+}
 
 void CalTree::OperatorInput(char oper) {
-	Impl_OperatorInput(oper);
+	Impl_OperatorInput(root, oper);
 }
 
 void CalTree::OperandInput(const std::string& operand){
-	Impl_OperandInput(operand);
+	Impl_OperandInput(root, operand);
 }
 
-void CalTree::FormulaInput(const std::string& formula){}
-
 //private
-void CalTree::Impl_OperatorInput(char oper){
+void CalTree::Impl_OperatorInput(node_addr nowLoc, char oper){
 	Data data = { TYPE::OPERAND, oper, -1, true };
-	node_addr newNode = new node{ data, location, std::vector<node_addr>() };
+	node_addr newNode = new node{ data, nowLoc, std::vector<node_addr>() };
 
 	location->next.push_back(newNode);
 }
 
-void CalTree::Impl_OperandInput(const std::string& operand){
+void CalTree::Impl_OperandInput(node_addr nowLoc, const std::string& operand){
 	long double num = Impl_StrToLDouble(operand);
 
 	Data data = { TYPE::OPERAND, -1, num, true };
-	node_addr newNode = new node{ data, location, std::vector<node_addr>() };
+	node_addr newNode = new node{ data, nowLoc, std::vector<node_addr>() };
 
 	location->next.push_back(newNode);
 }
 
-long double CalTree::Impl_StrToLDouble(const std::string& operand){
-	std::stack<char> stack;
-	std::queue<char> queue;
-
-	bool lessThanOne = false;
-	long double digit = 1;
-	long double num = 0;
-
-	for (int i = 0; i < operand.size(); i++) {
-		if (operand[i] == '.') {
-			lessThanOne = true;
-		}
-		else if(lessThanOne){
-			queue.push(operand[i] - '0');
-		}
-		else{
-			stack.push(operand[i] - '0');
-		}
-	}
-
-	while(!stack.empty()){
-		num += digit * (long double)stack.top();
-		stack.pop();
-		digit *= 10;
-	}
-
-	digit = 0.1;
-
-	while (!queue.empty()) {
-		num += digit * (long double)queue.front();
-		queue.pop();
-		digit *= 0.1;
-	}
-
+long double CalTree::Impl_StrToLDouble(const std::string& operand) {
+	const char* str = operand.c_str();
+	char* endPtr;
+	long double num = strtold(str, &endPtr);
 	std::cout << num << std::endl;
-
 	return num;
 }
+
+void CalTree::Impl_FormulaInput(node_addr nowLoc, const std::string& formula) {
+	Data data = {TYPE::FORMULA, -1, -1, false};
+	node_addr newNode = new node{data, nowLoc, std::vector<node_addr>()};
+}
+
