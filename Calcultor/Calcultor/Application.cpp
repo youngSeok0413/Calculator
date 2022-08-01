@@ -1,11 +1,10 @@
-#include <iostream>
 #include "Calcultor.h"
 
 int main() {
-	CalTree calculator;
-
-	calculator.OperatorInput('+');
-	calculator.OperandInput("12.344567");
+	CalTree cal;
+	
+	cal.GetInput("++12+424+123-");
+	cal.UploadInputToTree();
 
 	return 0;
 }

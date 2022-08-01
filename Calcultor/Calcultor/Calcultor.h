@@ -1,52 +1,51 @@
 #pragma once
-#include <string>
-#include <vector>
-#include <stack>
-#include <queue>
-
-#include <algorithm>
-
 #include <iostream>
 
+#include <string>
+#include <vector>
+
 enum TYPE :int {
-	OPERAND = 0,
-	OPERATOR = 1,
-	FORMULA = -1
+	OPERATOR = 0,
+	OPERAND = 1,
+	FORMULA = 2
 };
 
-struct Data {
+struct DataSet {
 	TYPE type;
 	char func;
-	long double op;
-	bool whetherResultOut;
+	long double operand;
+	bool confirmed;
 };
 
 struct Node {
-	Data data;
-	Node* prev;
-	std::vector<Node*> next;
+	DataSet Data;
+	Node* Prev;
+	std::vector<Node*> Next;
 };
 
-class CalTree{
-
+class CalTree {
 private:
-	using node = Node;
-	using node_addr = Node*;
-
-private:
-	node_addr root;
-	node_addr location;
+	Node* root;
+	Node* location;
+	std::string input;
+	std::string strToNum;
+	
 public:
-	CalTree();
+	CalTree() {
+		DataSet dts = {TYPE::FORMULA, -1, -1, false};
+		Node* newNode = new Node{dts, nullptr, std::vector<Node*>()};
+		root = newNode;
+		location = root;
+	}
+	void GetInput(const std::string& userInput);
 
-	void FormulaInput(const std::string& formula);
-	void OperatorInput(const char oper);
-	void OperandInput(const std::string& operand);
+	void UploadInputToTree();
+	void AddOperandNode(std::string::iterator& iter);
+	void AddOperatorNode(std::string::iterator& iter);
 
 private:
-	void Impl_OperatorInput(node_addr nowLoc, char oper);
-	void Impl_OperandInput(node_addr nowLoc, const std::string& operand);
-	void Impl_FormulaInput(node_addr nowLoc, const std::string& formula);
-
-	long double Impl_StrToLDouble(const std::string& operand);
+	void Impl_AddNewNode(DataSet& ds);
+	bool Impl_WhetherOperand(std::string::iterator& iter);
+	void Impl_OperandToString(std::string::iterator& iter);
+	long double Impl_StringToLongDouble();
 };
