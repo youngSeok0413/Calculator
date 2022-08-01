@@ -42,10 +42,20 @@ public:
 	void UploadInputToTree();
 	void AddOperandNode(std::string::iterator& iter);
 	void AddOperatorNode(std::string::iterator& iter);
+	void AddFormulaNode(std::string::iterator& iter);
+
+	void PrintAll();
 
 private:
 	void Impl_AddNewNode(DataSet& ds);
+
 	bool Impl_WhetherOperand(std::string::iterator& iter);
+
 	void Impl_OperandToString(std::string::iterator& iter);
 	long double Impl_StringToLongDouble();
+
+	void Impl_OpenBucket(std::string::iterator& iter);
+	void Impl_CloseBucket(std::string::iterator& iter);
+
+	void Impl_PrintAll(Node* here);
 };
