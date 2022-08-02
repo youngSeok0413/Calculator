@@ -1,12 +1,19 @@
 #include "Calcultor.h"
 
+//Public Functions
 void CalTree::GetInput(const std::string& userInput) {
 	input = userInput;
-	input.push_back('=');
+	std::cout << input << std::endl;
+	Impl_FilterInput();
 	std::cout << input << std::endl;
 }
 
 void CalTree::UploadInputToTree() {
+	if (input.empty()) {
+		std::cout << "No user input" << std::endl;
+		return;
+	}
+
 	for (std::string::iterator iter = input.begin(); iter != input.end(); iter++) {
 		AddOperatorNode(iter);
 		AddOperandNode(iter);
@@ -50,6 +57,111 @@ void CalTree::PrintAll() {
 	Impl_PrintAll(root);
 }
 
+//Impl_Funcitons
+//Input 단
+void CalTree::Impl_FilterInput() {
+	std::stack<char> stack;
+
+	for (std::string::iterator iter = input.begin(); iter != input.end(); iter++) {
+		if (Impl_WhetherWrongOperator(iter)) {
+			std::cout << "User input has problem : not defined operator" << std::endl;
+			input.clear();
+			return;
+		}
+
+		if(Impl_WhetherBucketsUsedUnProperly(stack, iter)) {
+			std::cout << "User input has problem : Bucket used unproperly" << std::endl;
+			input.clear();
+			return;
+		}
+
+	}
+	
+	if (Impl_WhetherBucketsUsedUnProperlyFinalCheck(stack)) {
+		std::cout << "User input has problem : Bucket used unproperly" << std::endl;
+		input.clear();
+		return;
+	}
+
+	for (std::string::iterator iter = input.begin(); iter != input.end(); iter++) {
+		Impl_EraseSpace(iter);
+		Impl_EraseEqual(iter);
+	}
+
+	Impl_AddEqual();
+
+	for (std::string::iterator iter = input.begin(); iter != input.end()-1; iter++) {
+		if (Impl_WhetherOperatorOverlapped(iter)) {
+			std::cout << "User input has problem : Operators are overlapped" << std::endl;
+			input.clear();
+			return;
+		}
+	}
+}
+
+//iterator가 리스트가 줄어들면서 iter 변하는 것 고려
+void CalTree::Impl_EraseSpace(std::string::iterator& iter) {
+	if (*iter == ' ') {
+		input.erase(iter);
+		iter--;
+	}
+}
+
+void CalTree::Impl_EraseEqual(std::string::iterator& iter) {
+	if (*iter == '=') {
+		input.erase(iter);
+		iter--;
+	}
+}
+
+bool CalTree::Impl_WhetherWrongOperator(std::string::iterator& iter) {
+	if (!Impl_WhetherOperand(iter)) {
+		for (int i = 0; i < sizeof(OperatorType); i++)
+			if (*iter == OperatorType[i])
+				return false;
+		return true;
+	}
+	return false;
+}
+
+bool CalTree::Impl_WhetherBucketsUsedUnProperly(std::stack<char>& stack, std::string::iterator& iter) {
+	if (*iter == '(') {
+		stack.push(*iter);
+	}
+	else if (*iter == ')') {
+		if(!stack.empty()){
+			if (stack.top() == '(')
+				stack.pop();
+		}
+		else {
+			stack.push(*iter);
+		}
+	}
+	
+	if (!stack.empty()) {
+		if (stack.top() == ')')
+			return true;
+	}
+		
+	return false;
+}
+
+bool CalTree::Impl_WhetherBucketsUsedUnProperlyFinalCheck(std::stack<char>& stack) {
+	if (stack.empty())
+		return false;
+	else 
+		return true;
+}
+
+bool CalTree::Impl_WhetherOperatorOverlapped(std::string::iterator& iter) {
+	// 다시
+}
+
+void CalTree::Impl_AddEqual() {
+	input.push_back('=');
+}
+
+//Tree단
 void CalTree::Impl_AddNewNode(DataSet& ds){
 	Node* newNode = new Node{ ds, location, std::vector<Node*>()};
 	location->Next.push_back(newNode);
