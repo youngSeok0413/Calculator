@@ -57,6 +57,10 @@ void CalTree::PrintAll() {
 	Impl_PrintAll(root);
 }
 
+void CalTree::ConvertToPostfixFromRoot() {
+	Impl_ConvertToPostfix(root);
+}
+
 //Impl_Funcitons
 //Input 단
 void CalTree::Impl_FilterInput() {
@@ -83,34 +87,31 @@ void CalTree::Impl_FilterInput() {
 		return;
 	}
 
+	input.push_back(' ');
+	for (std::string::iterator iter = input.begin(); iter != input.end();)
+		Impl_EraseThings(iter);
+
 	for (std::string::iterator iter = input.begin(); iter != input.end(); iter++) {
-		Impl_EraseSpace(iter);
-		Impl_EraseEqual(iter);
-	}
-
-	Impl_AddEqual();
-
-	for (std::string::iterator iter = input.begin(); iter != input.end()-1; iter++) {
 		if (Impl_WhetherOperatorOverlapped(iter)) {
 			std::cout << "User input has problem : Operators are overlapped" << std::endl;
 			input.clear();
 			return;
 		}
 	}
+
+	Impl_AddEqual();
 }
 
 //iterator가 리스트가 줄어들면서 iter 변하는 것 고려
-void CalTree::Impl_EraseSpace(std::string::iterator& iter) {
+void CalTree::Impl_EraseThings(std::string::iterator& iter) {
 	if (*iter == ' ') {
 		input.erase(iter);
-		iter--;
 	}
-}
-
-void CalTree::Impl_EraseEqual(std::string::iterator& iter) {
-	if (*iter == '=') {
+	else if (*iter == '=') {
 		input.erase(iter);
-		iter--;
+	}
+	else {
+		iter++;
 	}
 }
 
@@ -154,7 +155,90 @@ bool CalTree::Impl_WhetherBucketsUsedUnProperlyFinalCheck(std::stack<char>& stac
 }
 
 bool CalTree::Impl_WhetherOperatorOverlapped(std::string::iterator& iter) {
-	// 다시
+	if (iter == input.begin()) {
+		if (Impl_WhetherOperand(iter));
+		else if (*iter == '(');
+		else return true;
+	}
+	else if(iter == input.end()-1) {
+		if (Impl_WhetherOperand(iter));
+		else if (*iter == ')');
+		else return true;
+	}
+	else {
+		if (*iter == '+') {
+			std::string::iterator p = iter - 1;
+			std::string::iterator n = iter + 1;
+
+			if (*p == ')');
+			else if (Impl_WhetherOperand(p));
+			else return true;
+
+			if (*n == '(');
+			else if (Impl_WhetherOperand(n));
+			else return true;
+		}
+		else if (*iter == '-') {
+			std::string::iterator p = iter - 1;
+			std::string::iterator n = iter + 1;
+
+			if (*p == ')');
+			else if (Impl_WhetherOperand(p));
+			else return true;
+
+			if (*n == '(');
+			else if (Impl_WhetherOperand(n));
+			else return true;
+		}
+		else if (*iter == '*') {
+			std::string::iterator p = iter - 1;
+			std::string::iterator n = iter + 1;
+
+			if (*p == ')');
+			else if (Impl_WhetherOperand(p));
+			else return true;
+
+			if (*n == '(');
+			else if (Impl_WhetherOperand(n));
+			else return true;
+		}
+		else if (*iter == '/') {
+			std::string::iterator p = iter - 1;
+			std::string::iterator n = iter + 1;
+
+			if (*p == ')');
+			else if (Impl_WhetherOperand(p));
+			else return true;
+
+			if (*n == '(');
+			else if (Impl_WhetherOperand(n));
+			else return true;
+		}
+		else if (*iter == '(') {
+			std::string::iterator p = iter - 1;
+			std::string::iterator n = iter + 1;
+
+			if (Impl_WhetherOperand(p))
+				return true;
+
+			if (*n == '(');
+			else if (Impl_WhetherOperand(n));
+			else return true;
+		}
+		else if (*iter == ')') {
+			std::string::iterator p = iter - 1;
+			std::string::iterator n = iter + 1;
+
+			if (*n == ')');
+			else if (Impl_WhetherOperand(n));
+			else return true;
+
+			if (Impl_WhetherOperand(n))
+				return true;
+		}
+	}
+
+	return false;
 }
 
 void CalTree::Impl_AddEqual() {
@@ -216,6 +300,9 @@ void CalTree::Impl_CloseBucket(std::string::iterator& iter) {
 	if (*iter == ')') {
 		location = location->Prev;
 	}
+}
+
+void CalTree::Impl_ConvertToPostfix(Node* here) {
 }
 
 void CalTree::Impl_PrintAll(Node* here) {

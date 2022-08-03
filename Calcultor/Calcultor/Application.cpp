@@ -4,8 +4,8 @@
 
 int main() {
 	CalTree cal;
-	
-	cal.GetInput("1 + 2+(33 + 4)");
-
+	cal.GetInput("  1+        2*3");
+	cal.UploadInputToTree();
+	cal.PrintAll();
 	return 0;
 }

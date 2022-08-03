@@ -32,7 +32,6 @@ private:
 	Node* location;
 	std::string input;
 	std::string strToNum;
-	
 
 public:
 	CalTree() {
@@ -40,6 +39,7 @@ public:
 		Node* newNode = new Node{dts, nullptr, std::vector<Node*>()};
 		root = newNode;
 		location = root;
+		//calculator 주의 사항을 잘 적어줄 것
 	}
 	void GetInput(const std::string& userInput);
 
@@ -48,12 +48,13 @@ public:
 	void AddOperatorNode(std::string::iterator& iter);
 	void AddFormulaNode(std::string::iterator& iter);
 
+	void ConvertToPostfixFromRoot();
+
 	void PrintAll();
 
 private:
 	void Impl_FilterInput();
-	void Impl_EraseSpace(std::string::iterator& iter);
-	void Impl_EraseEqual(std::string::iterator& iter);
+	void Impl_EraseThings(std::string::iterator& iter);
 	bool Impl_WhetherWrongOperator(std::string::iterator& iter);
 	bool Impl_WhetherBucketsUsedUnProperly(std::stack<char>& stack,std::string::iterator& iter);
 	bool Impl_WhetherBucketsUsedUnProperlyFinalCheck(std::stack<char>& stack);
@@ -69,6 +70,8 @@ private:
 
 	void Impl_OpenBucket(std::string::iterator& iter);
 	void Impl_CloseBucket(std::string::iterator& iter);
+
+	void Impl_ConvertToPostfix(Node* here);
 
 	void Impl_PrintAll(Node* here);
 };
