@@ -57,6 +57,10 @@ void CalTree::PrintAll() {
 	Impl_PrintAll(root);
 }
 
+void CalTree::PrintVector() {
+	Impl_PrintVector(root->Next);
+}
+
 void CalTree::ConvertToPostfixFromRoot() {
 	Impl_ConvertToPostfix(root);
 }
@@ -229,8 +233,8 @@ bool CalTree::Impl_WhetherOperatorOverlapped(std::string::iterator& iter) {
 			std::string::iterator p = iter - 1;
 			std::string::iterator n = iter + 1;
 
-			if (*n == ')');
-			else if (Impl_WhetherOperand(n));
+			if (*p == ')');
+			if (Impl_WhetherOperand(p));
 			else return true;
 
 			if (Impl_WhetherOperand(n))
@@ -303,6 +307,106 @@ void CalTree::Impl_CloseBucket(std::string::iterator& iter) {
 }
 
 void CalTree::Impl_ConvertToPostfix(Node* here) {
+	if (!here) {
+		return;
+	}
+	else if (here->Next.empty()) {
+		return;
+	}
+	else {
+		std::stack<Node*> stack;
+		std::vector<Node*> sorted;
+
+		for (std::vector<Node*>::iterator iter = here->Next.begin(); iter != here->Next.end(); iter++) {
+			if((*iter)->Data.type == TYPE::OPERAND){
+				Node* it = *iter;
+				sorted.push_back(it);
+			}
+			else if ((*iter)->Data.type == TYPE::OPERATOR) {
+				if ((*iter)->Data.func == '+') {
+					while (!stack.empty()) {
+						sorted.push_back(stack.top());
+						stack.pop();
+					}
+					stack.push(*iter);
+				}
+				else if ((*iter)->Data.func == '-') {
+					while (!stack.empty()) {
+						sorted.push_back(stack.top());
+						stack.pop();
+					}
+					stack.push(*iter);
+				}
+				else if ((*iter)->Data.func == '*') {
+					if (!stack.empty()) {
+						if (stack.top()->Data.func == '+') {
+							stack.push(*iter);
+						}
+						else if (stack.top()->Data.func == '-') {
+							stack.push(*iter);
+						}
+						else if (stack.top()->Data.func == '*') {
+							while (!stack.empty()) {
+								sorted.push_back(stack.top());
+								stack.pop();
+							}
+							stack.push(*iter);
+						}
+						else if (stack.top()->Data.func == '/') {
+							while (!stack.empty()) {
+								sorted.push_back(stack.top());
+								stack.pop();
+							}
+							stack.push(*iter);
+						}
+					}
+					else {
+						stack.push(*iter);
+					}
+				}
+				else if ((*iter)->Data.func == '/') {
+					if (!stack.empty()) {
+						if (stack.top()->Data.func == '+') {
+							stack.push(*iter);
+						}
+						else if (stack.top()->Data.func == '-') {
+							stack.push(*iter);
+						}
+						else if (stack.top()->Data.func == '*') {
+							while (!stack.empty()) {
+								sorted.push_back(stack.top());
+								stack.pop();
+							}
+							stack.push(*iter);
+						}
+						else if (stack.top()->Data.func == '/') {
+							while (!stack.empty()) {
+								sorted.push_back(stack.top());
+								stack.pop();
+							}
+							stack.push(*iter);
+						}
+					}
+					else {
+						stack.push(*iter);
+					}
+				}
+			}
+			else if ((*iter)->Data.type == TYPE::FORMULA) {
+				Impl_ConvertToPostfix(*iter);
+				Node* it = *iter;
+				sorted.push_back(it);
+			}
+		}
+
+		while (!stack.empty()) {
+			sorted.push_back(stack.top());
+			stack.pop();
+		}
+
+		here->Next.clear();
+		here->Next.assign(sorted.begin(), sorted.end());
+	}
 }
 
 void CalTree::Impl_PrintAll(Node* here) {
@@ -333,6 +437,20 @@ void CalTree::Impl_PrintAll(Node* here) {
 		}
 		else if (here->Data.type == TYPE::FORMULA) {
 			std::cout << "Formula : " << here->Data.operand << " confirmed : " << (here->Data.confirmed ? "0" : "x") << (here == root ? " root" : "") << std::endl;
+		}
+	}
+}
+
+void CalTree::Impl_PrintVector(std::vector<Node*>& vec) {
+	for (std::vector<Node*>::iterator iter = vec.begin(); iter < vec.end(); iter++) {
+		if ((*iter)->Data.type == TYPE::OPERATOR) {
+			std::cout << "Operator : " << (*iter)->Data.func << std::endl;
+		}
+		else if ((*iter)->Data.type == TYPE::OPERAND) {
+			std::cout << "Operand : " << (*iter)->Data.operand << std::endl;
+		}
+		else if ((*iter)->Data.type == TYPE::FORMULA) {
+			std::cout << "Formula : " << (*iter)->Data.operand << " confirmed : " << ((*iter)->Data.confirmed ? "0" : "x") << std::endl;
 		}
 	}
 }

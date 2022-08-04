@@ -51,6 +51,7 @@ public:
 	void ConvertToPostfixFromRoot();
 
 	void PrintAll();
+	void PrintVector();
 
 private:
 	void Impl_FilterInput();
@@ -74,4 +75,5 @@ private:
 	void Impl_ConvertToPostfix(Node* here);
 
 	void Impl_PrintAll(Node* here);
+	void Impl_PrintVector(std::vector<Node*>& vec);
 };
