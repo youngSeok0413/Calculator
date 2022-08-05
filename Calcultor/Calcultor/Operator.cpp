@@ -1,11 +1,11 @@
 #include "Operator.h"
 
 long double Plus(long double a, long double b) {
-	return a - b;
+	return a + b;
 }
 
 long double Minus(long double a, long double b){
-	return a + b;
+	return a - b;
 }
 
 long double Multiple(long double a, long double b){

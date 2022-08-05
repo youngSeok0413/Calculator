@@ -3,9 +3,8 @@
 //Public Functions
 void CalTree::GetInput(const std::string& userInput) {
 	input = userInput;
-	std::cout << input << std::endl;
 	Impl_FilterInput();
-	std::cout << input << std::endl;
+	std::cout << "User Input : " << input << std::endl;
 }
 
 void CalTree::UploadInputToTree() {
@@ -53,16 +52,27 @@ void CalTree::AddFormulaNode(std::string::iterator& iter) {
 	Impl_CloseBucket(iter);
 }
 
-void CalTree::PrintAll() {
-	Impl_PrintAll(root);
-}
-
-void CalTree::PrintVector() {
-	Impl_PrintVector(root->Next);
-}
+//void CalTree::PrintAll() {
+//	Impl_PrintAll(root);
+//}
+//
+//void CalTree::PrintVector() {
+//	Impl_PrintVector(root->Next);
+//}
 
 void CalTree::ConvertToPostfixFromRoot() {
 	Impl_ConvertToPostfix(root);
+}
+
+void CalTree::GetTheResult() {
+	Impl_ConfirmFormula(root);
+
+	if (whetherDividedIntoZero) {
+		std::cout << "Error : Divided int zero" << std::endl;
+	}
+	else {
+		std::cout << "Answer : " << root->Data.operand << std::endl;
+	}
 }
 
 //Impl_Funcitons
@@ -160,13 +170,23 @@ bool CalTree::Impl_WhetherBucketsUsedUnProperlyFinalCheck(std::stack<char>& stac
 
 bool CalTree::Impl_WhetherOperatorOverlapped(std::string::iterator& iter) {
 	if (iter == input.begin()) {
+		std::string::iterator n = iter + 1;
+
 		if (Impl_WhetherOperand(iter));
-		else if (*iter == '(');
+		else if (*iter == '(') {
+			if (*n == ')')
+				return true;
+		}
 		else return true;
 	}
 	else if(iter == input.end()-1) {
+		std::string::iterator p = iter - 1;
+
 		if (Impl_WhetherOperand(iter));
-		else if (*iter == ')');
+		else if (*iter == ')') {
+			if (*p == '(')
+				return true;
+		}
 		else return true;
 	}
 	else {
@@ -409,49 +429,133 @@ void CalTree::Impl_ConvertToPostfix(Node* here) {
 	}
 }
 
-void CalTree::Impl_PrintAll(Node* here) {
-	if (!here) {
-		std::cout << "Empty" << std::endl;
+void CalTree::Impl_ConfirmFormula(Node* formNode){
+	if (!formNode) {
 		return;
 	}
-	if (here->Next.empty()) {
-		if (here->Data.type == TYPE::OPERATOR) {
-			std::cout << "Operator : " << here->Data.func << std::endl;
+	else if (formNode->Data.type == TYPE::FORMULA) {
+		if (!(formNode->Data.confirmed)) {
+			if (formNode->Next.empty()) {
+				formNode->Data.operand = 0;
+				formNode->Data.confirmed = true;
+			}
+			else {
+				std::stack<long double> stack;
+
+				for (std::vector<Node*>::iterator iter = formNode->Next.begin(); iter != formNode->Next.end(); iter++) {
+					if ((*iter)->Data.type == TYPE::OPERAND) {
+						stack.push((*iter)->Data.operand);
+					}
+					else if((*iter)->Data.type == TYPE::OPERATOR){
+						if ((*iter)->Data.func == '+') {
+							long double b = stack.top();
+							stack.pop();
+							long double a = stack.top();
+							stack.pop();
+							stack.push(Plus(a,b));
+						}
+						else if ((*iter)->Data.func == '-') {
+							long double b = stack.top();
+							stack.pop();
+							long double a = stack.top();
+							stack.pop();
+							stack.push(Minus(a, b));
+						}
+						else if ((*iter)->Data.func == '*') {
+							long double b = stack.top();
+							stack.pop();
+							long double a = stack.top();
+							stack.pop();
+							stack.push(Multiple(a, b));
+						}
+						else if ((*iter)->Data.func == '/') {
+							long double b = stack.top();
+							stack.pop();
+							long double a = stack.top();
+							stack.pop();
+							stack.push(Division(a, b));
+							if (stack.top() == 0) {
+								whetherDividedIntoZero = true;
+							}
+						}
+					}
+					else if((*iter)->Data.type == TYPE::FORMULA) {
+						if (!((*iter)->Data.confirmed))
+							Impl_ConfirmFormula(*iter);
+						stack.push((*iter)->Data.operand);
+					}
+				}
+
+				formNode->Data.operand = stack.top();
+				formNode->Data.confirmed = true;
+			}
 		}
-		else if (here->Data.type == TYPE::OPERAND) {
-			std::cout << "Operand : " << here->Data.operand << std::endl;
-		}
-		else if (here->Data.type == TYPE::FORMULA) {
-			std::cout << "Formula : " << here->Data.operand << " confirmed : " << (here->Data.confirmed ? "0" : "x") << (here == root ? " root" : "") << std::endl;
-		}
+	}
+}
+
+void CalTree::Impl_ClearAll(Node* here) {
+	if (!here) {
+		return;
+	}
+	if(here->Next.empty()){
+		delete here;
 	}
 	else {
-		for (int i = 0; i < here->Next.size(); i++)
-			Impl_PrintAll(here->Next[i]);
+		for (std::vector<Node*>::iterator iter = here->Next.begin(); 
+			iter != here->Next.end(); iter++) {
+			if ((*iter)->Data.type == TYPE::FORMULA)
+				Impl_ClearAll(*iter);
+			else
+				delete* iter;
+		}
 
-		if (here->Data.type == TYPE::OPERATOR) {
-			std::cout << "Operator : " << here->Data.func << std::endl;
-		}
-		else if (here->Data.type == TYPE::OPERAND) {
-			std::cout << "Operand : " << here->Data.operand << std::endl;
-		}
-		else if (here->Data.type == TYPE::FORMULA) {
-			std::cout << "Formula : " << here->Data.operand << " confirmed : " << (here->Data.confirmed ? "0" : "x") << (here == root ? " root" : "") << std::endl;
-		}
+		delete here;
 	}
 }
 
-void CalTree::Impl_PrintVector(std::vector<Node*>& vec) {
-	for (std::vector<Node*>::iterator iter = vec.begin(); iter < vec.end(); iter++) {
-		if ((*iter)->Data.type == TYPE::OPERATOR) {
-			std::cout << "Operator : " << (*iter)->Data.func << std::endl;
-		}
-		else if ((*iter)->Data.type == TYPE::OPERAND) {
-			std::cout << "Operand : " << (*iter)->Data.operand << std::endl;
-		}
-		else if ((*iter)->Data.type == TYPE::FORMULA) {
-			std::cout << "Formula : " << (*iter)->Data.operand << " confirmed : " << ((*iter)->Data.confirmed ? "0" : "x") << std::endl;
-		}
-	}
-}
+//void CalTree::Impl_PrintAll(Node* here) {
+//	if (!here) {
+//		std::cout << "Empty" << std::endl;
+//		return;
+//	}
+//	if (here->Next.empty()) {
+//		if (here->Data.type == TYPE::OPERATOR) {
+//			std::cout << "Operator : " << here->Data.func << std::endl;
+//		}
+//		else if (here->Data.type == TYPE::OPERAND) {
+//			std::cout << "Operand : " << here->Data.operand << std::endl;
+//		}
+//		else if (here->Data.type == TYPE::FORMULA) {
+//			std::cout << "Formula : " << here->Data.operand << " confirmed : " << (here->Data.confirmed ? "0" : "x") << (here == root ? " root" : "") << std::endl;
+//		}
+//	}
+//	else {
+//		for (int i = 0; i < here->Next.size(); i++)
+//			Impl_PrintAll(here->Next[i]);
+//
+//		if (here->Data.type == TYPE::OPERATOR) {
+//			std::cout << "Operator : " << here->Data.func << std::endl;
+//		}
+//		else if (here->Data.type == TYPE::OPERAND) {
+//			std::cout << "Operand : " << here->Data.operand << std::endl;
+//		}
+//		else if (here->Data.type == TYPE::FORMULA) {
+//			std::cout << "Formula : " << here->Data.operand << " confirmed : " << (here->Data.confirmed ? "0" : "x") << (here == root ? " root" : "") << std::endl;
+//		}
+//	}
+//}
+//
+//void CalTree::Impl_PrintVector(std::vector<Node*>& vec) {
+//	for (std::vector<Node*>::iterator iter = vec.begin(); iter < vec.end(); iter++) {
+//		if ((*iter)->Data.type == TYPE::OPERATOR) {
+//			std::cout << "Operator : " << (*iter)->Data.func << std::endl;
+//		}
+//		else if ((*iter)->Data.type == TYPE::OPERAND) {
+//			std::cout << "Operand : " << (*iter)->Data.operand << std::endl;
+//		}
+//		else if ((*iter)->Data.type == TYPE::FORMULA) {
+//			std::cout << "Formula : " << (*iter)->Data.operand << " confirmed : " << ((*iter)->Data.confirmed ? "0" : "x") << std::endl;
+//		}
+//	}
+//}
 
