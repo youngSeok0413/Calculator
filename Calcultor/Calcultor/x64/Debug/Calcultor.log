@@ -1,3 +1,5 @@
-﻿  Calculator.cpp
+﻿  Application.cpp
+  Calculator.cpp
 D:\GitRepo\Calculator\Calcultor\Calcultor\Calculator.cpp(362,18): warning C4390: ';': empty controlled statement found; is this the intent?
+  Generating Code...
   Calcultor.vcxproj -> D:\GitRepo\Calculator\Calcultor\x64\Debug\Calcultor.exe
