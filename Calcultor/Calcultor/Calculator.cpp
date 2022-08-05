@@ -1,6 +1,12 @@
 #include "Calcultor.h"
 
 //Public Functions
+std::string CalTree::GetKeyBoardInput() {
+	std::string formula;
+	std::getline(std::cin, formula);
+	return formula;
+}
+
 void CalTree::GetInput(const std::string& userInput) {
 	input = userInput;
 	Impl_FilterInput();
@@ -75,6 +81,31 @@ void CalTree::GetTheResult() {
 	}
 }
 
+void CalTree::Initialize() {
+	Impl_ClearAll(root);
+	DataSet dts = { TYPE::FORMULA, -1, -1, false };
+	Node* newNode = new Node{ dts, nullptr, std::vector<Node*>() };
+	root = newNode;
+	location = root;
+}
+
+void CalTree::CalculatorOperating() {
+	while (1) {
+		GetInput(GetKeyBoardInput());
+		UploadInputToTree();
+		ConvertToPostfixFromRoot();
+		GetTheResult();
+		Initialize();
+
+		std::cout << "q를 누르면 종료됩니다. : ";
+		if (GetKeyBoardInput() == "q") {
+			break;
+		}
+
+		std::cout << std::endl;
+	}
+}
+
 //Impl_Funcitons
 //Input 단
 void CalTree::Impl_FilterInput() {
@@ -110,6 +141,73 @@ void CalTree::Impl_FilterInput() {
 			std::cout << "User input has problem : Operators are overlapped" << std::endl;
 			input.clear();
 			return;
+		}
+	}
+
+	if (input.size() < 3) {
+		if (*(input.begin()) == '+')
+			input.insert(input.begin(), '0');
+		if (*(input.begin()) == '-')
+			input.insert(input.begin(), '0');
+	}
+	else {
+		bool whehterCloseToggle = false;
+		for (std::string::iterator iter = input.begin(); iter != input.end(); iter++) {
+			if (iter == input.begin()) {
+				if (*iter == '+') {
+					input.insert(iter, '0');
+					input.insert(iter, '(');
+					iter = iter + 2;
+					whehterCloseToggle = true;
+				}
+				else if (*iter == '-') {
+					input.insert(iter, '0');
+					input.insert(iter, '(');
+					iter = iter + 2;
+					whehterCloseToggle = true;
+				}
+			}
+			else if (iter == input.end() - 1) {
+				if (whehterCloseToggle) {
+					input.push_back(')');
+					whehterCloseToggle = false;
+				}
+			}
+			else {
+				if (!Impl_WhetherOperand(iter)) {
+					if (whehterCloseToggle) {
+						input.insert(iter, ')');
+						whehterCloseToggle = false;
+						iter++;
+					}
+					else {
+						if (*iter == '+') {
+							std::string::iterator p = iter - 1;
+							std::string::iterator n = iter + 1;
+							if (!Impl_WhetherOperand(p) && (*p != ')')) {
+								if (Impl_WhetherOperand(n)) {
+									input.insert(iter, '0');
+									input.insert(iter, '(');
+									iter = iter + 2;
+									whehterCloseToggle = true;
+								}
+							}
+						}
+						else if (*iter == '-') {
+							std::string::iterator p = iter - 1;
+							std::string::iterator n = iter + 1;
+							if (!Impl_WhetherOperand(p) && (*p != ')')) {
+								if (Impl_WhetherOperand(n)) {
+									input.insert(iter, '0');
+									input.insert(iter, '(');
+									iter = iter + 2;
+									whehterCloseToggle = true;
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -173,6 +271,14 @@ bool CalTree::Impl_WhetherOperatorOverlapped(std::string::iterator& iter) {
 		std::string::iterator n = iter + 1;
 
 		if (Impl_WhetherOperand(iter));
+		else if ('+'){
+			if (!Impl_WhetherOperand(n))
+				return true;
+		}
+		else if ('-'){
+			if (!Impl_WhetherOperand(n))
+				return true;
+		}
 		else if (*iter == '(') {
 			if (*n == ')')
 				return true;
@@ -191,26 +297,20 @@ bool CalTree::Impl_WhetherOperatorOverlapped(std::string::iterator& iter) {
 	}
 	else {
 		if (*iter == '+') {
-			std::string::iterator p = iter - 1;
 			std::string::iterator n = iter + 1;
 
-			if (*p == ')');
-			else if (Impl_WhetherOperand(p));
-			else return true;
-
 			if (*n == '(');
+			else if (*n == '+');
+			else if (*n == '-');
 			else if (Impl_WhetherOperand(n));
 			else return true;
 		}
 		else if (*iter == '-') {
-			std::string::iterator p = iter - 1;
 			std::string::iterator n = iter + 1;
 
-			if (*p == ')');
-			else if (Impl_WhetherOperand(p));
-			else return true;
-
 			if (*n == '(');
+			else if (*n == '+');
+			else if (*n == '-');
 			else if (Impl_WhetherOperand(n));
 			else return true;
 		}
@@ -223,6 +323,8 @@ bool CalTree::Impl_WhetherOperatorOverlapped(std::string::iterator& iter) {
 			else return true;
 
 			if (*n == '(');
+			else if (*n == '+');
+			else if (*n == '-');
 			else if (Impl_WhetherOperand(n));
 			else return true;
 		}
@@ -235,6 +337,8 @@ bool CalTree::Impl_WhetherOperatorOverlapped(std::string::iterator& iter) {
 			else return true;
 
 			if (*n == '(');
+			else if (*n == '+');
+			else if (*n == '-');
 			else if (Impl_WhetherOperand(n));
 			else return true;
 		}
@@ -246,6 +350,8 @@ bool CalTree::Impl_WhetherOperatorOverlapped(std::string::iterator& iter) {
 				return true;
 
 			if (*n == '(');
+			else if (*n == '+');
+			else if (*n == '-');
 			else if (Impl_WhetherOperand(n));
 			else return true;
 		}

@@ -1,6 +1,5 @@
 #pragma once
 #include <iostream>
-#include <Windows.h>
 
 #include <string>
 #include <vector>
@@ -41,8 +40,6 @@ public:
 		Node* newNode = new Node{dts, nullptr, std::vector<Node*>()};
 		root = newNode;
 		location = root;
-		std::string formula;
-		std::string end;
 
 		//calculator 주의 사항을 잘 적어줄 것
 		std::cout << 
@@ -50,36 +47,11 @@ public:
 			"숫자와 지원하는 연산자, 띄어쓰기, 등호를 제외한 다른 문자를 넣을 경우 계산을 할 수 없습니다.\n"
 			"음수 표기 혹은 양수 표기를 지원하지 않습니다. 따라서 음수를 표현 하고자 할 경우 (0-n) 꼴로 표기해주시길 바랍니다.\n"
 			<< std::endl;
-		std::cout << "수식을 입력하여 주십시오." << std::endl;
 
-		while (1) {
-			if (end.size() == 1) {
-				if (end.back() == 'q') {
-					break;
-				}
-				else
-					end.clear();
-			}
-
-			std::cin >> formula;
-
-			GetInput(formula);
-			UploadInputToTree();
-			ConvertToPostfixFromRoot();
-			GetTheResult();
-			std::cout << std::endl;
-			std::cout << "그만 두시려면 q를 누르고, 그렇지 않으면 아무키나 누르시오. : ";
-			std::cin >> end;
-			std::cout << std::endl;
-
-			Impl_ClearAll(root);
-			root = new Node{ dts, nullptr, std::vector<Node*>() };
-			location = root;
-			formula.clear();
-
-			Sleep(500);
-		}
+		CalculatorOperating();
 	}
+
+	std::string GetKeyBoardInput();
 	void GetInput(const std::string& userInput);
 
 	void UploadInputToTree();
@@ -89,6 +61,10 @@ public:
 
 	void ConvertToPostfixFromRoot();
 	void GetTheResult();
+
+	void Initialize();
+
+	void CalculatorOperating();
 	//void PrintAll();
 	//void PrintVector();
 
